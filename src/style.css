@@ -319,6 +319,83 @@ canvas {
   grid-column: 1 / -1;
 }
 
+.controls-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 213, 170, 0.14);
+  background: rgba(7, 11, 18, 0.74);
+}
+
+.controls-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.secondary-button-inline {
+  padding: 0.6rem 0.95rem;
+  font-size: 0.78rem;
+}
+
+.keybind-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.keybind-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  min-height: 3.35rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(255, 213, 170, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.keybind-label {
+  color: rgba(246, 242, 232, 0.9);
+}
+
+.keybind-button {
+  min-width: 6rem;
+  border: 1px solid rgba(255, 214, 172, 0.18);
+  border-radius: 0.85rem;
+  padding: 0.6rem 0.8rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f6f2e8;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.keybind-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 163, 101, 0.42);
+}
+
+.keybind-button.is-listening {
+  background: rgba(255, 118, 76, 0.18);
+  border-color: rgba(255, 153, 102, 0.8);
+  box-shadow: 0 0 0 1px rgba(255, 160, 113, 0.22);
+}
+
+.keybind-hint {
+  margin: 0;
+}
+
 .field select,
 .field input[type="range"] {
   width: 100%;
@@ -460,6 +537,7 @@ canvas {
 
 @media (max-width: 640px) {
   .settings-grid,
+  .keybind-grid,
   .finish-stats {
     grid-template-columns: 1fr;
   }

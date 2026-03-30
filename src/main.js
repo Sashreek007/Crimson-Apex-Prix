@@ -23,6 +23,47 @@ const DIFFICULTY_PRESETS = {
   elite: { label: "Elite", aiPace: 1.06, aiRubberBand: 3.1 },
 };
 
+const KEYBIND_ACTIONS = [
+  { id: "throttle", label: "Throttle", defaultKey: "w" },
+  { id: "brake", label: "Brake", defaultKey: "s" },
+  { id: "steerLeft", label: "Steer Left", defaultKey: "a" },
+  { id: "steerRight", label: "Steer Right", defaultKey: "d" },
+  { id: "boost", label: "Boost", defaultKey: "shift" },
+  { id: "camera", label: "Camera", defaultKey: "v" },
+  { id: "pause", label: "Pause", defaultKey: "p" },
+  { id: "restart", label: "Restart", defaultKey: "r" },
+  { id: "mute", label: "Mute", defaultKey: "m" },
+  { id: "launch", label: "Launch Race", defaultKey: "space" },
+];
+
+const DEFAULT_KEYBINDS = Object.fromEntries(KEYBIND_ACTIONS.map((action) => [action.id, action.defaultKey]));
+
+const FALLBACK_KEYBINDS = {
+  throttle: ["arrowup"],
+  brake: ["arrowdown"],
+  steerLeft: ["arrowleft"],
+  steerRight: ["arrowright"],
+  pause: ["escape"],
+};
+
+const KEY_LABELS = {
+  " ": "Space",
+  alt: "Alt",
+  arrowdown: "Down",
+  arrowleft: "Left",
+  arrowright: "Right",
+  arrowup: "Up",
+  backspace: "Backspace",
+  control: "Ctrl",
+  delete: "Delete",
+  enter: "Enter",
+  escape: "Esc",
+  meta: "Meta",
+  shift: "Shift",
+  space: "Space",
+  tab: "Tab",
+};
+
 const TRACK_PRESETS = {
   monza: {
     label: "Monza",
@@ -284,6 +325,11 @@ const ui = {
   soundToggle: document.querySelector("#soundToggle"),
   volumeControl: document.querySelector("#volumeControl"),
   volumeValue: document.querySelector("#volumeValue"),
+  hudHint: document.querySelector("#hudHint"),
+  garageHint: document.querySelector("#garageHint"),
+  keybindHint: document.querySelector("#keybindHint"),
+  resetKeybindsButton: document.querySelector("#resetKeybindsButton"),
+  keybindButtons: [...document.querySelectorAll("[data-bind-action]")],
 };
 
 const scene = new THREE.Scene();
@@ -322,7 +368,9 @@ const state = {
     difficulty: ui.difficultySelect.value,
     soundEnabled: ui.soundToggle.checked,
     volume: Number(ui.volumeControl.value),
+    keybinds: { ...DEFAULT_KEYBINDS },
   },
+  bindingCapture: null,
   lastResult: null,
 };
 
@@ -351,11 +399,30 @@ ui.soundToggle.addEventListener("change", () => {
   void raceAudio.unlock();
 });
 ui.volumeControl.addEventListener("input", () => syncSettingsFromUI());
+ui.resetKeybindsButton.addEventListener("click", resetKeybinds);
+ui.keybindButtons.forEach((button) => {
+  button.addEventListener("click", () => toggleKeybindCapture(button.dataset.bindAction));
+});
 
 document.addEventListener("keydown", (event) => {
-  const key = event.key.toLowerCase();
+  const key = normalizeInputKey(event);
+  if (!key) {
+    return;
+  }
 
-  if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
+  if (state.bindingCapture) {
+    event.preventDefault();
+    if (event.repeat) {
+      return;
+    }
+
+    setKeybind(state.bindingCapture, key);
+    state.bindingCapture = null;
+    updateKeybindUI();
+    return;
+  }
+
+  if (["arrowup", "arrowdown", "arrowleft", "arrowright", "space"].includes(key)) {
     event.preventDefault();
   }
 
@@ -365,27 +432,27 @@ document.addEventListener("keydown", (event) => {
     return;
   }
 
-  if (key === " ") {
+  if (matchesAction("launch", key)) {
     if (state.phase === "garage" || state.phase === "finished") {
       void beginCountdown();
     }
   }
 
-  if (key === "v") {
+  if (matchesAction("camera", key)) {
     state.cameraMode = state.cameraMode === "chase" ? "broadcast" : "chase";
   }
 
-  if (key === "r") {
+  if (matchesAction("restart", key)) {
     if (state.phase !== "garage") {
       void beginCountdown();
     }
   }
 
-  if (key === "p" || key === "escape") {
+  if (matchesAction("pause", key)) {
     togglePause();
   }
 
-  if (key === "m") {
+  if (matchesAction("mute", key)) {
     ui.soundToggle.checked = !ui.soundToggle.checked;
     syncSettingsFromUI();
     void raceAudio.unlock();
@@ -393,7 +460,10 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.addEventListener("keyup", (event) => {
-  keys[event.key.toLowerCase()] = false;
+  const key = normalizeInputKey(event);
+  if (key) {
+    keys[key] = false;
+  }
 });
 
 window.addEventListener("resize", () => {
@@ -402,6 +472,7 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+updateKeybindUI();
 syncSettingsFromUI({ preview: true });
 openGarage();
 animate();
@@ -446,8 +517,110 @@ function togglePause() {
   }
 
   state.paused = !state.paused;
-  ui.status.textContent = state.paused ? "Session paused. Press P or Esc to resume." : state.phase === "countdown" ? "Hold steady for lights out." : "Push for the apex.";
+  ui.status.textContent = state.paused
+    ? `Session paused. Press ${formatBindingSummary("pause", " / ")} to resume.`
+    : state.phase === "countdown"
+      ? "Hold steady for lights out."
+      : "Push for the apex.";
   raceAudio.pauseCue(state.paused);
+}
+
+function normalizeInputKey(event) {
+  if (!event.key) {
+    return null;
+  }
+
+  if (event.key === " ") {
+    return "space";
+  }
+
+  return event.key.toLowerCase();
+}
+
+function matchesAction(actionId, key) {
+  const bindings = [state.settings.keybinds[actionId], ...(FALLBACK_KEYBINDS[actionId] ?? [])];
+  return bindings.includes(key);
+}
+
+function isActionPressed(actionId) {
+  const bindings = [state.settings.keybinds[actionId], ...(FALLBACK_KEYBINDS[actionId] ?? [])];
+  return bindings.some((key) => Boolean(key) && keys[key]);
+}
+
+function formatKeyLabel(key) {
+  if (!key) {
+    return "Unset";
+  }
+
+  if (KEY_LABELS[key]) {
+    return KEY_LABELS[key];
+  }
+
+  return key.length === 1 ? key.toUpperCase() : key.slice(0, 1).toUpperCase() + key.slice(1);
+}
+
+function formatBindingSummary(actionId, separator = " / ") {
+  const bindings = [state.settings.keybinds[actionId], ...(FALLBACK_KEYBINDS[actionId] ?? [])];
+  return [...new Set(bindings.filter(Boolean))].map(formatKeyLabel).join(separator);
+}
+
+function buildControlSummary() {
+  return (
+    `Throttle ${formatBindingSummary("throttle")}. ` +
+    `Brake ${formatBindingSummary("brake")}. ` +
+    `Left ${formatBindingSummary("steerLeft")}. ` +
+    `Right ${formatBindingSummary("steerRight")}. ` +
+    `Boost ${formatBindingSummary("boost")}. ` +
+    `Camera ${formatBindingSummary("camera")}. ` +
+    `Pause ${formatBindingSummary("pause")}. ` +
+    `Restart ${formatBindingSummary("restart")}. ` +
+    `Mute ${formatBindingSummary("mute")}.`
+  );
+}
+
+function updateControlHints() {
+  ui.hudHint.textContent = buildControlSummary();
+  ui.garageHint.textContent =
+    `${formatBindingSummary("launch")} launches the current setup. ` +
+    `Restart keeps these settings until you change them.`;
+
+  if (!state.bindingCapture) {
+    ui.keybindHint.textContent = "Click a binding, then press a key. Duplicate keys swap automatically.";
+    return;
+  }
+
+  const activeAction = KEYBIND_ACTIONS.find((action) => action.id === state.bindingCapture);
+  ui.keybindHint.textContent = `Press a key for ${activeAction.label}. Duplicate keys swap automatically.`;
+}
+
+function updateKeybindUI() {
+  ui.keybindButtons.forEach((button) => {
+    const actionId = button.dataset.bindAction;
+    button.textContent = formatKeyLabel(state.settings.keybinds[actionId]);
+    button.classList.toggle("is-listening", state.bindingCapture === actionId);
+  });
+  updateControlHints();
+}
+
+function toggleKeybindCapture(actionId) {
+  state.bindingCapture = state.bindingCapture === actionId ? null : actionId;
+  updateKeybindUI();
+}
+
+function setKeybind(actionId, nextKey) {
+  const previousKey = state.settings.keybinds[actionId];
+  const conflictingAction = KEYBIND_ACTIONS.find((action) => action.id !== actionId && state.settings.keybinds[action.id] === nextKey);
+
+  state.settings.keybinds[actionId] = nextKey;
+  if (conflictingAction) {
+    state.settings.keybinds[conflictingAction.id] = previousKey;
+  }
+}
+
+function resetKeybinds() {
+  state.settings.keybinds = { ...DEFAULT_KEYBINDS };
+  state.bindingCapture = null;
+  updateKeybindUI();
 }
 
 function syncSettingsFromUI({ preview = false } = {}) {
@@ -472,6 +645,7 @@ function syncSettingsFromUI({ preview = false } = {}) {
 
   updateTrackInfo();
   updateGarageMeta();
+  updateKeybindUI();
 
   if (preview || trackChanged) {
     preparePreviewGrid();
@@ -603,7 +777,7 @@ function animate() {
     paused: state.paused,
     speed: player.speed,
     throttle: player.throttleIntent,
-    brake: keys.s || keys.arrowdown ? 1 : 0,
+    brake: isActionPressed("brake") ? 1 : 0,
     steering: player.steerVisual,
     boostActive: player.boostActive,
     onTrack: player.onTrack,
@@ -631,9 +805,9 @@ function updateCountdown(dt) {
 }
 
 function updatePlayer(dt) {
-  const throttle = keys.w || keys.arrowup ? 1 : 0;
-  const brake = keys.s || keys.arrowdown ? 1 : 0;
-  const steer = (keys.a || keys.arrowleft ? 1 : 0) - (keys.d || keys.arrowright ? 1 : 0);
+  const throttle = isActionPressed("throttle") ? 1 : 0;
+  const brake = isActionPressed("brake") ? 1 : 0;
+  const steer = (isActionPressed("steerLeft") ? 1 : 0) - (isActionPressed("steerRight") ? 1 : 0);
 
   player.throttleIntent = throttle;
   player.steerVisual = THREE.MathUtils.damp(player.steerVisual, steer, 7.6, dt);
@@ -641,7 +815,7 @@ function updatePlayer(dt) {
   const infoBeforeMove = getClosestTrackInfo(player.group.position, trackData);
   const onTrack = Math.abs(infoBeforeMove.crossTrack) < trackData.width * 0.5 + 1.6;
   const draftFactor = state.phase === "race" ? getDraftFactor() : 0;
-  const boostActive = state.phase === "race" && !player.finished && keys.shift && player.boost > 0.04 && player.speed > 12;
+  const boostActive = state.phase === "race" && !player.finished && isActionPressed("boost") && player.boost > 0.04 && player.speed > 12;
   const trackSpeedFactor = trackData.speedFactor ?? 1;
   const accelerationFactor = trackData.accelerationFactor ?? 1;
   const coastSpeed = onTrack ? PLAYER_COAST_SPEED * trackSpeedFactor : 8;
@@ -919,7 +1093,7 @@ function finishEntity(entity) {
       place: player.finishPlace,
       raceTime: player.raceTime,
       bestLap: player.bestLapTime,
-      settings: { ...state.settings },
+      settings: { ...state.settings, keybinds: { ...state.settings.keybinds } },
     };
 
     ui.status.textContent = `P${player.finishPlace}. Cool the tyres and queue the next session when ready.`;

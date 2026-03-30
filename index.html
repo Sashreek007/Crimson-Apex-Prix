@@ -47,7 +47,7 @@
           <p class="panel-title">Session</p>
           <p id="sessionValue" class="session-text">5 laps · 5 rivals · Pro</p>
           <p id="statusValue" class="status-text status-highlight">Tune the session in the garage and launch when ready.</p>
-          <p class="hint-text">
+          <p id="hudHint" class="hint-text">
             Drive with WASD or arrows. Shift boost. V camera. P or Esc pause. R restart. M mute.
           </p>
         </div>
@@ -134,13 +134,65 @@
                   <input id="soundToggle" type="checkbox" checked />
                   <span>Race audio enabled</span>
                 </label>
+
+                <div class="controls-panel">
+                  <div class="controls-panel-header">
+                    <p class="panel-title">Keybinds</p>
+                    <button id="resetKeybindsButton" class="secondary-button secondary-button-inline" type="button">Reset Defaults</button>
+                  </div>
+
+                  <div class="keybind-grid">
+                    <label class="keybind-row">
+                      <span class="keybind-label">Throttle</span>
+                      <button class="keybind-button" type="button" data-bind-action="throttle">W</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Brake</span>
+                      <button class="keybind-button" type="button" data-bind-action="brake">S</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Steer Left</span>
+                      <button class="keybind-button" type="button" data-bind-action="steerLeft">A</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Steer Right</span>
+                      <button class="keybind-button" type="button" data-bind-action="steerRight">D</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Boost</span>
+                      <button class="keybind-button" type="button" data-bind-action="boost">Shift</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Camera</span>
+                      <button class="keybind-button" type="button" data-bind-action="camera">V</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Pause</span>
+                      <button class="keybind-button" type="button" data-bind-action="pause">P</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Restart</span>
+                      <button class="keybind-button" type="button" data-bind-action="restart">R</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Mute</span>
+                      <button class="keybind-button" type="button" data-bind-action="mute">M</button>
+                    </label>
+                    <label class="keybind-row">
+                      <span class="keybind-label">Launch Race</span>
+                      <button class="keybind-button" type="button" data-bind-action="launch">Space</button>
+                    </label>
+                  </div>
+
+                  <p id="keybindHint" class="hint-text keybind-hint">Click a binding, then press a key. Duplicate keys swap automatically.</p>
+                </div>
               </div>
 
               <div class="button-row">
                 <button id="startButton" class="primary-button" type="button">Launch Race</button>
               </div>
 
-              <p class="hint-text">Space also launches the current setup. Restart keeps these settings until you change them.</p>
+              <p id="garageHint" class="hint-text">Space also launches the current setup. Restart keeps these settings until you change them.</p>
             </div>
           </div>
         </div>
