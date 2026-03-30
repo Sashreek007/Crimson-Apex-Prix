@@ -1,0 +1,508 @@
+:root {
+  color-scheme: dark;
+  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(224, 121, 63, 0.32), transparent 32%),
+    linear-gradient(180deg, #09131f 0%, #05080d 74%);
+  color: #f6f2e8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% -8%, rgba(255, 181, 102, 0.28), transparent 30%),
+    linear-gradient(180deg, #09131f 0%, #05080d 100%);
+}
+
+canvas {
+  display: block;
+}
+
+.hud {
+  position: fixed;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.hud-top {
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hud-side {
+  top: 7.2rem;
+  left: 1rem;
+  display: grid;
+  gap: 0.9rem;
+  width: min(23rem, calc(100vw - 2rem));
+}
+
+.hud-bottom {
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  display: grid;
+  place-items: center;
+  gap: 0.7rem;
+}
+
+.hud-card,
+.hud-panel,
+.overlay-card,
+.settings-shell,
+.finish-stat {
+  background: rgba(9, 16, 27, 0.76);
+  border: 1px solid rgba(255, 209, 161, 0.16);
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.34),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px);
+}
+
+.hud-card {
+  min-width: 8rem;
+  padding: 0.7rem 0.95rem 0.8rem;
+  border-radius: 1rem;
+}
+
+.hud-wide {
+  min-width: 10.3rem;
+}
+
+.hud-label,
+.eyebrow,
+.panel-title,
+.hint-text,
+.field-label {
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hud-label,
+.hint-text,
+.eyebrow,
+.field-label {
+  font-size: 0.72rem;
+  color: rgba(247, 233, 214, 0.72);
+}
+
+.hud-card strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.24rem;
+  font-weight: 700;
+}
+
+.hud-panel {
+  padding: 1rem 1rem 1.1rem;
+  border-radius: 1.1rem;
+}
+
+.panel-title {
+  margin: 0 0 0.7rem;
+  font-size: 0.74rem;
+  color: rgba(255, 190, 140, 0.84);
+}
+
+.status-text,
+.session-text {
+  margin: 0;
+  line-height: 1.45;
+  color: #f5ede0;
+}
+
+.session-text {
+  color: rgba(255, 222, 190, 0.9);
+}
+
+.status-highlight {
+  margin-top: 0.85rem;
+  font-size: 1.04rem;
+}
+
+.leaderboard {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 2.3rem 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.95rem;
+}
+
+.leaderboard-row.is-player {
+  background:
+    linear-gradient(90deg, rgba(232, 74, 43, 0.28), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 180, 136, 0.12);
+}
+
+.leaderboard-pos {
+  color: rgba(255, 209, 161, 0.86);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+}
+
+.leaderboard-name {
+  font-weight: 600;
+}
+
+.leaderboard-lap {
+  color: rgba(247, 233, 214, 0.76);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.82rem;
+}
+
+.boost-shell {
+  width: min(34rem, calc(100vw - 2rem));
+  padding: 0.75rem 0.9rem 0.95rem;
+  border-radius: 1rem;
+  background: rgba(7, 11, 18, 0.7);
+  border: 1px solid rgba(255, 209, 161, 0.16);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.32);
+}
+
+.boost-track {
+  margin-top: 0.55rem;
+  width: 100%;
+  height: 0.92rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.boost-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, #f4d66c 0%, #ff9047 44%, #ff5d2d 100%);
+  box-shadow: 0 0 18px rgba(255, 126, 74, 0.42);
+  transform-origin: left center;
+}
+
+.countdown {
+  min-height: 3.8rem;
+  display: grid;
+  place-items: center;
+  font-family: "Avenir Next Condensed", "Avenir Next", "Trebuchet MS", sans-serif;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #fff3de;
+  text-shadow:
+    0 0 25px rgba(255, 149, 88, 0.36),
+    0 0 40px rgba(255, 120, 68, 0.18);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at center, rgba(236, 109, 46, 0.18), transparent 36%),
+    rgba(3, 5, 10, 0.64);
+  transition: opacity 220ms ease;
+}
+
+.overlay-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay-card {
+  width: min(38rem, 100%);
+  padding: clamp(1.4rem, 3vw, 2.4rem);
+  border-radius: 1.7rem;
+}
+
+.overlay-card-wide {
+  width: min(64rem, 100%);
+}
+
+.overlay-card-compact {
+  width: min(31rem, 100%);
+}
+
+.overlay-card h1,
+.overlay-card h2 {
+  margin: 0.35rem 0 0.75rem;
+  font-size: clamp(2.4rem, 8vw, 4.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.overlay-card h2 {
+  font-size: clamp(2.2rem, 7vw, 3.5rem);
+}
+
+.overlay-copy {
+  margin: 0;
+  max-width: 36rem;
+  line-height: 1.6;
+  color: rgba(245, 237, 224, 0.9);
+}
+
+.garage-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  gap: 1.4rem;
+  align-items: start;
+}
+
+.garage-copy {
+  padding-right: 0.6rem;
+}
+
+.garage-meta {
+  margin: 1rem 0 0;
+  line-height: 1.55;
+  color: rgba(255, 223, 184, 0.86);
+}
+
+.track-info {
+  margin: 0.95rem 0 0;
+  line-height: 1.6;
+  color: rgba(255, 232, 208, 0.9);
+}
+
+.feature-list {
+  margin: 1.15rem 0 1.25rem;
+  padding-left: 1.25rem;
+  line-height: 1.7;
+  color: rgba(255, 233, 204, 0.9);
+}
+
+.settings-shell {
+  padding: 1rem;
+  border-radius: 1.3rem;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field-volume,
+.toggle-field {
+  grid-column: 1 / -1;
+}
+
+.field select,
+.field input[type="range"] {
+  width: 100%;
+  pointer-events: auto;
+}
+
+.field select {
+  appearance: none;
+  border: 1px solid rgba(255, 213, 170, 0.14);
+  border-radius: 0.95rem;
+  padding: 0.9rem 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.14)),
+    rgba(7, 11, 18, 0.86);
+  color: #f6f2e8;
+  font: inherit;
+}
+
+.field input[type="range"] {
+  accent-color: #ff874e;
+}
+
+.toggle-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.4rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(255, 213, 170, 0.14);
+  background: rgba(7, 11, 18, 0.82);
+  color: #f6f2e8;
+}
+
+.toggle-field input {
+  width: 1.15rem;
+  height: 1.15rem;
+  pointer-events: auto;
+}
+
+.button-row {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.primary-button,
+.secondary-button {
+  pointer-events: auto;
+  border: 0;
+  padding: 0.95rem 1.3rem;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.primary-button {
+  color: #140805;
+  background:
+    linear-gradient(135deg, #ffd77a 0%, #ffa94f 48%, #ff6b3a 100%);
+  box-shadow:
+    0 16px 35px rgba(255, 108, 58, 0.25),
+    inset 0 -2px 0 rgba(80, 29, 12, 0.28);
+}
+
+.secondary-button {
+  color: #f6f2e8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 214, 172, 0.18);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-button:active,
+.secondary-button:active {
+  transform: translateY(1px);
+}
+
+.finish-stats {
+  margin: 1.2rem 0 1.45rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.finish-stat {
+  padding: 0.85rem 0.95rem;
+  border-radius: 1rem;
+}
+
+.finish-stat span {
+  display: block;
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(247, 233, 214, 0.72);
+}
+
+.finish-stat strong {
+  display: block;
+  margin-top: 0.32rem;
+  font-size: 1.05rem;
+}
+
+@media (max-width: 980px) {
+  .garage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .garage-copy {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 840px) {
+  .hud-top {
+    justify-content: flex-start;
+  }
+
+  .hud-side {
+    top: auto;
+    bottom: 7rem;
+    width: min(100%, calc(100vw - 2rem));
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-grid,
+  .finish-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .hud-top {
+    left: 0.75rem;
+    right: 0.75rem;
+    top: 0.75rem;
+    gap: 0.55rem;
+  }
+
+  .hud-card {
+    min-width: 7rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .hud-card strong {
+    font-size: 1.05rem;
+  }
+
+  .hud-side,
+  .hud-bottom {
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .overlay {
+    padding: 0.85rem;
+  }
+
+  .overlay-card {
+    padding: 1rem;
+    border-radius: 1.2rem;
+  }
+
+  .button-row {
+    flex-direction: column;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+  }
+}

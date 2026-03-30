@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crimson Apex Prix</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23081014'/%3E%3Cpath d='M14 46V18h6l8 4 8-4 8 4 8-4v20h-6l-8-4-8 4-8-4-8 4z' fill='%23ff7d45'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <aside class="hud hud-top">
+        <div class="hud-card">
+          <span class="hud-label">Lap</span>
+          <strong id="lapValue">1 / 5</strong>
+        </div>
+        <div class="hud-card">
+          <span class="hud-label">Position</span>
+          <strong id="positionValue">1 / 6</strong>
+        </div>
+        <div class="hud-card hud-wide">
+          <span class="hud-label">Race Time</span>
+          <strong id="timerValue">00:00.000</strong>
+        </div>
+        <div class="hud-card hud-wide">
+          <span class="hud-label">Lap Time</span>
+          <strong id="lapTimerValue">00:00.000</strong>
+        </div>
+        <div class="hud-card hud-wide">
+          <span class="hud-label">Best Lap</span>
+          <strong id="bestLapValue">NO LAP</strong>
+        </div>
+        <div class="hud-card">
+          <span class="hud-label">Speed</span>
+          <strong><span id="speedValue">0</span> mph</strong>
+        </div>
+      </aside>
+
+      <aside class="hud hud-side">
+        <div class="hud-panel">
+          <p class="panel-title">Grid</p>
+          <div id="leaderboard" class="leaderboard"></div>
+        </div>
+        <div class="hud-panel">
+          <p class="panel-title">Session</p>
+          <p id="sessionValue" class="session-text">5 laps · 5 rivals · Pro</p>
+          <p id="statusValue" class="status-text status-highlight">Tune the session in the garage and launch when ready.</p>
+          <p class="hint-text">
+            Drive with WASD or arrows. Shift boost. V camera. P or Esc pause. R restart. M mute.
+          </p>
+        </div>
+      </aside>
+
+      <div class="hud hud-bottom">
+        <div class="boost-shell">
+          <span class="hud-label">ERS Boost</span>
+          <div class="boost-track">
+            <div id="boostFill" class="boost-fill"></div>
+          </div>
+        </div>
+        <div id="countdownValue" class="countdown"></div>
+      </div>
+
+      <section id="introOverlay" class="overlay">
+        <div class="overlay-card overlay-card-wide">
+          <div class="garage-grid">
+            <div class="garage-copy">
+              <p class="eyebrow">Garage</p>
+              <h1>Crimson Apex Prix</h1>
+              <p class="overlay-copy">
+                A sunset grand prix sprint turned into a proper arcade race weekend: configurable laps, fuller grid, sharper cars, and reactive race audio.
+              </p>
+              <p id="trackInfo" class="track-info">
+                Autodromo Nazionale Monza · Italy · 5.793 km. Long straights and heavy-braking chicanes.
+              </p>
+              <ul class="feature-list">
+                <li>Choose a real-circuit recreation plus lap count, rival count, and AI difficulty</li>
+                <li>Procedural engine, wind, countdown, and finish audio</li>
+                <li>Rebuilt F1-style cars with wings, halo, rims, and richer materials</li>
+              </ul>
+              <p id="garageMeta" class="garage-meta">Recommended session: 5 laps, 5 rivals, Pro difficulty.</p>
+            </div>
+
+            <div class="settings-shell">
+              <p class="panel-title">Race Setup</p>
+              <div class="settings-grid">
+                <label class="field">
+                  <span class="field-label">Track</span>
+                  <select id="trackSelect">
+                    <option value="monza" selected>Monza</option>
+                    <option value="silverstone">Silverstone</option>
+                    <option value="suzuka">Suzuka</option>
+                    <option value="monaco">Monaco</option>
+                    <option value="spa">Spa</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Laps</span>
+                  <select id="lapsSelect">
+                    <option value="3">3 laps</option>
+                    <option value="5" selected>5 laps</option>
+                    <option value="8">8 laps</option>
+                    <option value="12">12 laps</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Rivals</span>
+                  <select id="rivalsSelect">
+                    <option value="3">3 rivals</option>
+                    <option value="5" selected>5 rivals</option>
+                    <option value="6">6 rivals</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Difficulty</span>
+                  <select id="difficultySelect">
+                    <option value="rookie">Rookie</option>
+                    <option value="pro" selected>Pro</option>
+                    <option value="elite">Elite</option>
+                  </select>
+                </label>
+
+                <label class="field field-volume">
+                  <span class="field-label">Volume <strong id="volumeValue">68%</strong></span>
+                  <input id="volumeControl" type="range" min="0" max="1" step="0.01" value="0.68" />
+                </label>
+
+                <label class="toggle-field">
+                  <input id="soundToggle" type="checkbox" checked />
+                  <span>Race audio enabled</span>
+                </label>
+              </div>
+
+              <div class="button-row">
+                <button id="startButton" class="primary-button" type="button">Launch Race</button>
+              </div>
+
+              <p class="hint-text">Space also launches the current setup. Restart keeps these settings until you change them.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="finishOverlay" class="overlay overlay-hidden">
+        <div class="overlay-card overlay-card-compact">
+          <p class="eyebrow">Finish</p>
+          <h2 id="finishTitle">Race Complete</h2>
+          <p id="finishBody" class="overlay-copy">You crossed the line.</p>
+          <div id="finishStats" class="finish-stats"></div>
+          <div class="button-row">
+            <button id="restartButton" class="primary-button" type="button">Run It Back</button>
+            <button id="garageButton" class="secondary-button" type="button">Back to Garage</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
