@@ -222,7 +222,9 @@ canvas {
   inset: 0;
   z-index: 5;
   display: grid;
-  place-items: center;
+  justify-items: center;
+  align-items: start;
+  overflow-y: auto;
   padding: 1.5rem;
   background:
     radial-gradient(circle at center, rgba(236, 109, 46, 0.18), transparent 36%),
@@ -237,8 +239,11 @@ canvas {
 
 .overlay-card {
   width: min(38rem, 100%);
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
   padding: clamp(1.4rem, 3vw, 2.4rem);
   border-radius: 1.7rem;
+  scrollbar-gutter: stable;
 }
 
 .overlay-card-wide {
